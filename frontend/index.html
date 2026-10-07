@@ -48,9 +48,6 @@
         </div>
         <button type="submit" class="btn btn-primary btn-block">Sign In</button>
       </form>
-      <div class="auth-footer">
-        <p>Don't have an account? <a href="#" id="link-register">Register here</a></p>
-      </div>
     </div>
   </div>
 
@@ -77,29 +74,17 @@
         <button class="tab" id="tab-manual">Manual Attendance</button>
       </div>
 
-      <!-- Video Scanner Section -->
+      <!-- Video Scanner Entry Section -->
       <section id="section-video" class="camera-card">
         <div class="card-header">
-          <h2>Live Classroom Viewport</h2>
-          <div class="status-indicator">
-            <span id="camera-status-dot" class="dot dot-inactive"></span>
-            <span id="camera-status-text">Camera Idle</span>
-          </div>
+          <h2>Automated Classroom Scan</h2>
         </div>
-        <div class="viewport-wrapper">
-          <video id="video" autoplay playsinline muted></video>
-          <div id="recording-indicator" class="recording-indicator hidden">
-            <span class="pulse-dot"></span> Recording HD Video...
-          </div>
-        </div>
-        <div class="controls-panel">
-          <div class="input-group">
-            <input type="text" id="course-code" value="CSE-401" placeholder="Course Code">
-          </div>
-          <div class="button-group">
-            <button id="btn-toggle-camera" class="btn btn-secondary">Start Camera</button>
-            <button id="btn-record" class="btn btn-primary" disabled>Start HD Scan</button>
-          </div>
+        <div style="padding: 1.5rem; text-align: center;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="margin-bottom:1rem;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">
+            Launch the high-definition scanner to securely capture the classroom. The AI will process the video and extract faces automatically.
+          </p>
+          <button id="btn-open-scanner" class="btn btn-primary btn-block" style="padding: 1rem; font-size: 1rem;">Launch HD Camera Scanner</button>
         </div>
       </section>
 
@@ -119,7 +104,47 @@
     </main>
   </div>
 
-  <!-- 4. STUDENT DASHBOARD VIEW -->
+  <!-- 4. FULLSCREEN iOS-STYLE CAMERA VIEW -->
+  <div id="camera-view" class="view camera-fullscreen">
+    <!-- Top Bar -->
+    <div class="camera-top-bar">
+      <button id="cam-flash" class="cam-icon-btn">
+        <svg id="icon-flash-off" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.1 2.182a1 1 0 0 1 .891-.17l6.5 2.5a1 1 0 0 1 .494 1.488L15.5 10h4a1 1 0 0 1 .863 1.5l-8.5 14a1 1 0 0 1-1.85-.64l1.5-8.86H7.5a1 1 0 0 1-.863-1.5l5.5-12a1 1 0 0 1 .963-.318z"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+        <svg id="icon-flash-on" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M10.1 2.182a1 1 0 0 1 .891-.17l6.5 2.5a1 1 0 0 1 .494 1.488L15.5 10h4a1 1 0 0 1 .863 1.5l-8.5 14a1 1 0 0 1-1.85-.64l1.5-8.86H7.5a1 1 0 0 1-.863-1.5l5.5-12a1 1 0 0 1 .963-.318z"/></svg>
+      </button>
+      <div class="cam-settings-group">
+        <button id="cam-quality" class="cam-text-btn">HD</button>
+        <button id="cam-fps" class="cam-text-btn">30</button>
+      </div>
+      <button id="cam-close" class="cam-text-btn" style="font-weight:600;">Done</button>
+    </div>
+
+    <!-- Video Feed -->
+    <div class="cam-video-container">
+      <video id="video" autoplay playsinline muted></video>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="camera-bottom-bar">
+      <div class="cam-timer" id="cam-timer">00:00</div>
+      <div class="cam-controls-row">
+        <!-- Spacer for alignment -->
+        <div class="cam-spacer"></div>
+        
+        <!-- Record Button -->
+        <button id="cam-record-btn" class="record-btn-outer">
+          <div class="record-btn-inner"></div>
+        </button>
+        
+        <!-- Flip Camera -->
+        <button id="cam-flip" class="cam-icon-btn cam-spacer" style="display:flex; justify-content:flex-end;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. STUDENT DASHBOARD VIEW -->
   <div id="student-view" class="view">
     <header class="app-header">
       <div class="header-container">
@@ -174,12 +199,5 @@
 
   <script src="js/camera.js"></script>
   <script src="js/app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js');
-      });
-    }
-  </script>
 </body>
 </html>
