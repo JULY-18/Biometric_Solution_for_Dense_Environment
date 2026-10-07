@@ -1,132 +1,104 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const video = document.getElementById("video");
-  const canvas = document.getElementById("canvas");
-  const statusDot = document.getElementById("camera-status-dot");
-  const statusText = document.getElementById("camera-status-text");
+  // Views
+  const splashView = document.getElementById("splash-view");
+  const authView = document.getElementById("auth-view");
+  const teacherView = document.getElementById("teacher-view");
+  const studentView = document.getElementById("student-view");
 
-  const btnToggleCamera = document.getElementById("btn-toggle-camera");
-  const btnSwitchCamera = document.getElementById("btn-switch-camera");
-  const btnCapture = document.getElementById("btn-capture");
-  const courseCodeInput = document.getElementById("course-code");
+  function switchView(targetView) {
+    [splashView, authView, teacherView, studentView].forEach(v => {
+      v.classList.remove("active");
+    });
+    // Small delay to allow CSS opacity transition if needed
+    setTimeout(() => {
+      targetView.classList.add("active");
+    }, 50);
+  }
 
-  const metricDetected = document.getElementById("metric-detected");
-  const metricRecognized = document.getElementById("metric-recognized");
-  const metricUnknown = document.getElementById("metric-unknown");
-  const attendeesList = document.getElementById("attendees-list");
-  const loadingOverlay = document.getElementById("loading-overlay");
+  // --- SPLASH LOGIC ---
+  // Simulate app loading / splash screen for 2.5 seconds
+  setTimeout(() => {
+    switchView(authView);
+  }, 2500);
 
-  const camera = new CameraManager(video, statusDot, statusText);
-  const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
-    ? "http://localhost:8000" 
-    : "";
+  // --- AUTH LOGIC ---
+  const authForm = document.getElementById("auth-form");
+  const emailInput = document.getElementById("email");
+  const teacherNameSpan = document.getElementById("teacher-name");
 
-  btnToggleCamera.addEventListener("click", async () => {
-    if (camera.isActive()) {
-      camera.stop();
-      btnToggleCamera.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Start Camera
-      `;
-      btnSwitchCamera.disabled = true;
-      btnCapture.disabled = true;
+  authForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim().toLowerCase();
+    const namePart = email.split('@')[0];
+    const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+
+    // Mock Authentication Logic based on Email
+    // Any email with 'faculty', 'teacher', 'prof' OR domain '@faculty.mitvpu.ac.in'
+    if (email.includes("faculty") || email.includes("prof") || email.includes("teacher")) {
+      teacherNameSpan.textContent = formattedName;
+      switchView(teacherView);
     } else {
-      const started = await camera.start();
-      if (started) {
-        btnToggleCamera.innerHTML = `
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
-          Stop Camera
-        `;
-        btnSwitchCamera.disabled = false;
-        btnCapture.disabled = false;
-      }
+      switchView(studentView);
     }
   });
 
-  btnSwitchCamera.addEventListener("click", async () => {
-    if (camera.isActive()) {
-      await camera.switchLens();
+  // Logout Logic
+  document.getElementById("btn-logout-teacher").addEventListener("click", () => {
+    emailInput.value = '';
+    document.getElementById("password").value = '';
+    if (window.cameraManager && window.cameraManager.isActive()) {
+      window.cameraManager.stop(); // stop camera on logout
+    }
+    switchView(authView);
+  });
+  
+  document.getElementById("btn-logout-student").addEventListener("click", () => {
+    emailInput.value = '';
+    document.getElementById("password").value = '';
+    // Reset booking form
+    document.getElementById("booking-form-container").classList.remove("hidden");
+    document.getElementById("booking-success").classList.add("hidden");
+    switchView(authView);
+  });
+
+  // --- TEACHER DASHBOARD LOGIC ---
+  const tabVideo = document.getElementById("tab-video");
+  const tabManual = document.getElementById("tab-manual");
+  const sectionVideo = document.getElementById("section-video");
+  const sectionManual = document.getElementById("section-manual");
+
+  tabVideo.addEventListener("click", () => {
+    tabVideo.classList.add("active");
+    tabManual.classList.remove("active");
+    sectionVideo.classList.remove("hidden");
+    sectionManual.classList.add("hidden");
+  });
+
+  tabManual.addEventListener("click", () => {
+    tabManual.classList.add("active");
+    tabVideo.classList.remove("active");
+    sectionManual.classList.remove("hidden");
+    sectionVideo.classList.add("hidden");
+    
+    // Stop camera if navigating away
+    if (window.cameraManager && window.cameraManager.isActive()) {
+      document.getElementById("btn-toggle-camera").click(); // simulate click to stop
     }
   });
 
-  btnCapture.addEventListener("click", async () => {
-    if (!camera.isActive()) return;
+  // --- STUDENT DASHBOARD LOGIC ---
+  const bookingForm = document.getElementById("booking-form");
+  const bookingFormContainer = document.getElementById("booking-form-container");
+  const bookingSuccess = document.getElementById("booking-success");
 
-    // Freeze frame to canvas
-    canvas.width = video.videoWidth || 1280;
-    canvas.height = video.videoHeight || 720;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    loadingOverlay.classList.remove("hidden");
-    btnCapture.disabled = true;
-
-    canvas.toBlob(async (blob) => {
-      if (!blob) {
-        alert("Failed to capture image frame from video feed.");
-        loadingOverlay.classList.add("hidden");
-        btnCapture.disabled = false;
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("image", blob, "classroom_capture.jpg");
-      formData.append("course_code", courseCodeInput.value.trim() || "CSE-401");
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/attendance/verify`, {
-          method: "POST",
-          body: formData
-        });
-
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.detail || "Server error while processing attendance.");
-        }
-
-        const data = await response.json();
-        updateResultsView(data);
-      } catch (error) {
-        console.error("Attendance API Error:", error);
-        alert(`Failed to verify attendance: ${error.message}\nMake sure the backend is running at ${API_BASE_URL}`);
-      } finally {
-        loadingOverlay.classList.add("hidden");
-        btnCapture.disabled = false;
-      }
-    }, "image/jpeg", 0.95);
+  bookingForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    // Simulate booking API call
+    bookingForm.querySelector("button").textContent = "Booking...";
+    setTimeout(() => {
+      bookingFormContainer.classList.add("hidden");
+      bookingSuccess.classList.remove("hidden");
+      bookingForm.querySelector("button").textContent = "Confirm Booking";
+    }, 1200);
   });
-
-  function updateResultsView(data) {
-    metricDetected.textContent = data.faces_detected;
-    metricRecognized.textContent = data.recognized_count;
-    metricUnknown.textContent = data.unknown_count;
-
-    if (!data.attendees || data.attendees.length === 0) {
-      attendeesList.innerHTML = `
-        <tr>
-          <td colspan="5" class="empty-state">
-            ${data.faces_detected > 0 
-              ? `${data.faces_detected} face(s) detected, but no matching enrolled students found.` 
-              : "No faces detected in the captured frame. Ensure adequate classroom lighting."}
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    attendeesList.innerHTML = data.attendees.map(attendee => `
-      <tr>
-        <td><strong>${escapeHtml(attendee.srn)}</strong></td>
-        <td>${escapeHtml(attendee.name)}</td>
-        <td>${Math.round(attendee.confidence * 100)}%</td>
-        <td><span class="status-badge">PRESENT</span></td>
-        <td>${new Date(attendee.marked_at).toLocaleTimeString()}</td>
-      </tr>
-    `).join("");
-  }
-
-  function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-  }
 });

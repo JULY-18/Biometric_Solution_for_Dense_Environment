@@ -2,113 +2,184 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Classroom Biometric Attendance | Team 13</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SmartAttend | Biometric System</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header class="app-header">
-    <div class="header-container">
-      <div class="brand">
-        <span class="badge">Team 13</span>
-        <h1>Smart Classroom Biometric Attendance</h1>
-      </div>
-      <p class="subtitle">A Web-Native Biometric Solution for Dense Environments</p>
+
+  <!-- 1. SPLASH SCREEN VIEW -->
+  <div id="splash-view" class="view active splash-container">
+    <div class="splash-logo">
+      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="url(#blue-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <defs>
+          <linearGradient id="blue-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3b82f6" />
+            <stop offset="100%" stop-color="#1d4ed8" />
+          </linearGradient>
+        </defs>
+        <path d="M12 2a10 10 0 0 0-10 10c0 5.523 4.477 10 10 10s10-4.477 10-10A10 10 0 0 0 12 2Z"/>
+        <path d="M12 6v6l4 2"/>
+      </svg>
     </div>
-  </header>
+    <h1 class="splash-title">SmartAttend</h1>
+    <p class="splash-subtitle">Team 13 • Biometric Solution</p>
+  </div>
 
-  <main class="main-container">
-    <section class="camera-card">
-      <div class="card-header">
-        <h2>Live Classroom Viewport</h2>
-        <div class="status-indicator">
-          <span id="camera-status-dot" class="dot dot-inactive"></span>
-          <span id="camera-status-text">Camera Idle</span>
-        </div>
+  <!-- 2. AUTHENTICATION VIEW -->
+  <div id="auth-view" class="view">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>Welcome Back</h2>
+        <p>Login to access your dashboard</p>
       </div>
-
-      <div class="viewport-wrapper">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="canvas" style="display: none;"></canvas>
-        <div id="loading-overlay" class="loading-overlay hidden">
-          <div class="spinner"></div>
-          <p id="loading-message">Processing dense facial recognition...</p>
-        </div>
-      </div>
-
-      <div class="controls-panel">
+      <form id="auth-form" class="auth-form">
         <div class="input-group">
-          <label for="course-code">Course / Class:</label>
-          <input type="text" id="course-code" value="CSE-401" placeholder="e.g. CSE-401">
+          <label for="email">Institutional Email</label>
+          <input type="email" id="email" placeholder="name@mitvpu.ac.in" required>
         </div>
-
-        <div class="button-group">
-          <button id="btn-toggle-camera" class="btn btn-secondary">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            Start Camera
-          </button>
-          <button id="btn-switch-camera" class="btn btn-outline" disabled>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-            Switch Lens
-          </button>
-          <button id="btn-capture" class="btn btn-primary" disabled>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-            Capture & Verify
-          </button>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••" required>
         </div>
+        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+      </form>
+      <div class="auth-footer">
+        <p>Don't have an account? <a href="#" id="link-register">Register here</a></p>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <section class="results-card">
-      <div class="card-header">
-        <h2>Attendance Verification Results</h2>
-        <span id="report-link-container"></span>
+  <!-- 3. TEACHER DASHBOARD VIEW -->
+  <div id="teacher-view" class="view">
+    <header class="app-header">
+      <div class="header-container">
+        <div class="brand">
+          <span class="badge">Faculty</span>
+          <h1>Instructor Portal</h1>
+        </div>
+        <button id="btn-logout-teacher" class="btn-text">Logout</button>
       </div>
+    </header>
 
-      <div class="metrics-grid">
-        <div class="metric-box">
-          <span class="metric-label">Faces Detected</span>
-          <span id="metric-detected" class="metric-value">0</span>
-        </div>
-        <div class="metric-box metric-success">
-          <span class="metric-label">Recognized Present</span>
-          <span id="metric-recognized" class="metric-value">0</span>
-        </div>
-        <div class="metric-box metric-warning">
-          <span class="metric-label">Unrecognized / Occluded</span>
-          <span id="metric-unknown" class="metric-value">0</span>
-        </div>
+    <main class="main-container">
+      <div class="welcome-banner">
+        <h2>Welcome, <span id="teacher-name">Professor</span>!</h2>
+        <p>Select an attendance method for today's session.</p>
       </div>
 
-      <div class="attendees-table-wrapper">
-        <table class="attendees-table">
-          <thead>
-            <tr>
-              <th>SRN</th>
-              <th>Student Name</th>
-              <th>Match Confidence</th>
-              <th>Status</th>
-              <th>Timestamp</th>
-            </tr>
-          </thead>
-          <tbody id="attendees-list">
-            <tr>
-              <td colspan="5" class="empty-state">No attendance scan captured yet. Start camera and click "Capture & Verify".</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="teacher-tabs">
+        <button class="tab active" id="tab-video">HD Video Scan</button>
+        <button class="tab" id="tab-manual">Manual Attendance</button>
       </div>
-    </section>
-  </main>
 
-  <footer class="app-footer">
-    <p>&copy; 2026 MIT VPU - Team 13 (Rayyan Shaikh, Ruhsikesh Shinde, Yogesh Narayankar)</p>
-  </footer>
+      <!-- Video Scanner Section -->
+      <section id="section-video" class="camera-card">
+        <div class="card-header">
+          <h2>Live Classroom Viewport</h2>
+          <div class="status-indicator">
+            <span id="camera-status-dot" class="dot dot-inactive"></span>
+            <span id="camera-status-text">Camera Idle</span>
+          </div>
+        </div>
+        <div class="viewport-wrapper">
+          <video id="video" autoplay playsinline muted></video>
+          <div id="recording-indicator" class="recording-indicator hidden">
+            <span class="pulse-dot"></span> Recording HD Video...
+          </div>
+        </div>
+        <div class="controls-panel">
+          <div class="input-group">
+            <input type="text" id="course-code" value="CSE-401" placeholder="Course Code">
+          </div>
+          <div class="button-group">
+            <button id="btn-toggle-camera" class="btn btn-secondary">Start Camera</button>
+            <button id="btn-record" class="btn btn-primary" disabled>Start HD Scan</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Manual Attendance Section -->
+      <section id="section-manual" class="camera-card hidden">
+        <div class="card-header">
+          <h2>Manual Override</h2>
+        </div>
+        <p style="padding:1rem; color:var(--text-muted); font-size:0.9rem;">
+          Use this section to manually mark attendance for students whose biometrics failed or who joined late.
+        </p>
+        <div class="input-group" style="padding: 0 1rem 1rem;">
+          <input type="text" placeholder="Search Student SRN...">
+          <button class="btn btn-primary" style="margin-top:0.5rem;">Mark Present</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 4. STUDENT DASHBOARD VIEW -->
+  <div id="student-view" class="view">
+    <header class="app-header">
+      <div class="header-container">
+        <div class="brand">
+          <span class="badge" style="background:#8b5cf6;">Student</span>
+          <h1>Student Portal</h1>
+        </div>
+        <button id="btn-logout-student" class="btn-text">Logout</button>
+      </div>
+    </header>
+
+    <main class="main-container" style="max-width:600px; margin: 2rem auto;">
+      <div class="student-card">
+        <div class="student-hero">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          <h2>Biometric Enrollment</h2>
+          <p>To ensure 99% accuracy in crowded classrooms, we require a high-quality biometric scan recorded under optimal lighting.</p>
+        </div>
+        
+        <div id="booking-form-container">
+          <div class="info-box warning-box">
+            <strong>Note:</strong> Self-uploaded photos from mobile phones are not accepted due to low resolution and poor lighting.
+          </div>
+          
+          <h3 style="margin: 1.5rem 0 1rem;">Book your Photography Lab Slot</h3>
+          <form id="booking-form" class="auth-form">
+            <div class="input-group">
+              <label>Select Date</label>
+              <input type="date" required>
+            </div>
+            <div class="input-group">
+              <label>Select Time Slot</label>
+              <select required>
+                <option value="">-- Choose Slot --</option>
+                <option value="10:00">10:00 AM - 10:30 AM</option>
+                <option value="11:00">11:00 AM - 11:30 AM</option>
+                <option value="14:00">02:00 PM - 02:30 PM</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" style="background:#8b5cf6;">Confirm Booking</button>
+          </form>
+        </div>
+
+        <div id="booking-success" class="hidden" style="text-align:center; padding: 2rem 0;">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" style="margin-bottom:1rem;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <h2 style="color:#16a34a; margin-bottom:0.5rem;">Booking Confirmed!</h2>
+          <p style="color:var(--text-muted);">Thank you! Please arrive at the IT Building Photography Lab on time. Your registration will be completed by the admin.</p>
+        </div>
+      </div>
+    </main>
+  </div>
 
   <script src="js/camera.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js');
+      });
+    }
+  </script>
 </body>
 </html>
